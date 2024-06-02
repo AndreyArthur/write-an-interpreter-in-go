@@ -50,6 +50,10 @@ func (parser *Parser) parseLetStatement() *AstLetStatement {
 		parser.advance()
 	}
 
+	if parser.current.Type == TOKEN_SEMICOLON {
+		parser.advance()
+	}
+
 	return letStatement
 }
 
@@ -59,6 +63,10 @@ func (parser *Parser) parseReturnStatement() AstStatement {
 
 	for parser.current.Type != TOKEN_SEMICOLON &&
 		parser.current.Type != TOKEN_EOF {
+		parser.advance()
+	}
+
+	if parser.current.Type == TOKEN_SEMICOLON {
 		parser.advance()
 	}
 
@@ -83,7 +91,6 @@ func (parser *Parser) Parse() *AstCompound {
 	for parser.current.Type != TOKEN_EOF {
 		statement := parser.parseStatement()
 		compound.Statements = append(compound.Statements, statement)
-		parser.advance()
 	}
 
 	return compound
