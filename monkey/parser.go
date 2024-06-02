@@ -12,12 +12,8 @@ func NewParser(lexer *Lexer) *Parser {
 	current := lexer.Next()
 	tokens = append(tokens, current)
 	for current.Type != TOKEN_EOF {
-		current := lexer.Next()
+		current = lexer.Next()
 		tokens = append(tokens, current)
-		// Don't know why but the condition on the top is never satisfied (???)
-		if current.Type == TOKEN_EOF {
-			break
-		}
 	}
 
 	parser := &Parser{
@@ -57,10 +53,24 @@ func (parser *Parser) parseLetStatement() *AstLetStatement {
 	return letStatement
 }
 
+func (parser *Parser) parseReturnStatement() AstStatement {
+	returnStatement := &AstReturnStatement{Token: parser.current}
+	parser.advance()
+
+	for parser.current.Type != TOKEN_SEMICOLON &&
+		parser.current.Type != TOKEN_EOF {
+		parser.advance()
+	}
+
+	return returnStatement
+}
+
 func (parser *Parser) parseStatement() AstStatement {
 	switch parser.current.Type {
 	case TOKEN_LET:
 		return parser.parseLetStatement()
+	case TOKEN_RETURN:
+		return parser.parseReturnStatement()
 	default:
 		// TODO: implement other cases and handle errors
 		return nil

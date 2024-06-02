@@ -69,3 +69,22 @@ func (let *AstLetStatement) String() string {
 
 	return out.String()
 }
+
+type AstReturnStatement struct {
+	Token *Token // "return"
+	Value AstExpression
+}
+
+func (returnStatement *AstReturnStatement) statement() {}
+func (returnStatement *AstReturnStatement) TokenLiteral() string {
+	return returnStatement.Token.Literal
+}
+func (returnStatement *AstReturnStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(returnStatement.TokenLiteral() + " ")
+	out.WriteString(returnStatement.Value.String())
+	out.WriteString(";")
+
+	return out.String()
+}
