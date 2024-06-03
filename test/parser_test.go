@@ -41,26 +41,17 @@ func (*parserHelpers) letStatementIsOk(
 func (*parserHelpers) returnStatementIsOk(
 	t *testing.T,
 	statement monkey.AstStatement,
-	name string,
 ) bool {
-	letStatement, ok := statement.(*monkey.AstLetStatement)
+	returnStatement, ok := statement.(*monkey.AstReturnStatement)
 	if !ok {
+		t.Fatal("Given statement is not a return statement.")
 		return false
 	}
 
-	if letStatement.TokenLiteral() != "let" {
+	if returnStatement.TokenLiteral() != "return" {
 		t.Fatalf(
-			"Expected token literal to be \"let\", got %q.",
-			letStatement.TokenLiteral(),
-		)
-		return false
-	}
-
-	if letStatement.Identifier.String() != name {
-		t.Fatalf(
-			"Expected let identifier name to be %q, got %q.",
-			name,
-			letStatement.Value.String(),
+			"Expected token literal to be \"return\", got %q.",
+			returnStatement.TokenLiteral(),
 		)
 		return false
 	}
@@ -82,8 +73,6 @@ let foo = 10;
 		t.Fatalf("Expected 3 statements, got %d.", len(compound.Statements))
 	}
 
-	helpers := &parserHelpers{}
-
 	expectations := []struct {
 		identifier string
 	}{
@@ -91,6 +80,8 @@ let foo = 10;
 		{"b"},
 		{"foo"},
 	}
+
+	helpers := &parserHelpers{}
 
 	for index, expectation := range expectations {
 		if !helpers.letStatementIsOk(
@@ -117,12 +108,14 @@ return 10;
 		t.Fatalf("Expected 3 statements, got %d.", len(compound.Statements))
 	}
 
+	helpers := &parserHelpers{}
+
 	for _, statement := range compound.Statements {
-		if statement.TokenLiteral() != "return" {
-			t.Fatalf(
-				"Expected literal to be \"return\", got %q.",
-				statement.TokenLiteral(),
-			)
+		if !helpers.returnStatementIsOk(
+			t,
+			statement,
+		) {
+			return
 		}
 	}
 }
