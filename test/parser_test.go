@@ -7,7 +7,7 @@ import (
 
 type parserHelpers struct{}
 
-func (*parserHelpers) letStatementIsOk(
+func (*parserHelpers) expectLetStatement(
 	t *testing.T,
 	statement monkey.AstStatement,
 	name string,
@@ -40,7 +40,7 @@ func (*parserHelpers) letStatementIsOk(
 	return letStatement
 }
 
-func (*parserHelpers) returnStatementIsOk(
+func (*parserHelpers) expectReturnStatement(
 	t *testing.T,
 	statement monkey.AstStatement,
 ) *monkey.AstReturnStatement {
@@ -63,7 +63,7 @@ func (*parserHelpers) returnStatementIsOk(
 	return returnStatement
 }
 
-func (*parserHelpers) expressionStatementIsOk(
+func (*parserHelpers) expectExpressionStatement(
 	t *testing.T,
 	statement monkey.AstStatement,
 ) *monkey.AstExpressionStatement {
@@ -76,7 +76,7 @@ func (*parserHelpers) expressionStatementIsOk(
 	return expressionStatement
 }
 
-func (*parserHelpers) integerLiteralIsOk(
+func (*parserHelpers) expectIntegerLiteral(
 	t *testing.T,
 	expression monkey.AstExpression,
 	value int64,
@@ -131,7 +131,7 @@ let foo = 10;
 	helpers := &parserHelpers{}
 
 	for index, expectation := range expectations {
-		if helpers.letStatementIsOk(
+		if helpers.expectLetStatement(
 			t,
 			compound.Statements[index],
 			expectation.identifier,
@@ -158,7 +158,7 @@ return 10;
 	helpers := &parserHelpers{}
 
 	for _, statement := range compound.Statements {
-		if helpers.returnStatementIsOk(
+		if helpers.expectReturnStatement(
 			t,
 			statement,
 		) == nil {
@@ -192,7 +192,7 @@ func TestIntegerLiterals(t *testing.T) {
 	helpers := &parserHelpers{}
 
 	for index, expectation := range expectations {
-		expressionStatement := helpers.expressionStatementIsOk(
+		expressionStatement := helpers.expectExpressionStatement(
 			t,
 			compound.Statements[index],
 		)
@@ -200,7 +200,7 @@ func TestIntegerLiterals(t *testing.T) {
 			return
 		}
 
-		integerLiteral := helpers.integerLiteralIsOk(
+		integerLiteral := helpers.expectIntegerLiteral(
 			t,
 			expressionStatement.Expression,
 			expectation.value,
