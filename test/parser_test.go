@@ -11,11 +11,13 @@ func (*parserHelpers) letStatementIsOk(
 	t *testing.T,
 	statement monkey.AstStatement,
 	name string,
-) bool {
+) *monkey.AstLetStatement {
+	// TODO: We're not verfying the value
+
 	letStatement, ok := statement.(*monkey.AstLetStatement)
 	if !ok {
 		t.Fatal("Given statement is not a let statement.")
-		return false
+		return nil
 	}
 
 	if letStatement.TokenLiteral() != "let" {
@@ -23,7 +25,7 @@ func (*parserHelpers) letStatementIsOk(
 			"Expected token literal to be \"let\", got %q.",
 			letStatement.TokenLiteral(),
 		)
-		return false
+		return nil
 	}
 
 	if letStatement.Identifier.String() != name {
@@ -32,20 +34,22 @@ func (*parserHelpers) letStatementIsOk(
 			name,
 			letStatement.Value.String(),
 		)
-		return false
+		return nil
 	}
 
-	return true
+	return letStatement
 }
 
 func (*parserHelpers) returnStatementIsOk(
 	t *testing.T,
 	statement monkey.AstStatement,
-) bool {
+) *monkey.AstReturnStatement {
+	// TODO: We're not verfying the value
+
 	returnStatement, ok := statement.(*monkey.AstReturnStatement)
 	if !ok {
 		t.Fatal("Given statement is not a return statement.")
-		return false
+		return nil
 	}
 
 	if returnStatement.TokenLiteral() != "return" {
@@ -53,10 +57,10 @@ func (*parserHelpers) returnStatementIsOk(
 			"Expected token literal to be \"return\", got %q.",
 			returnStatement.TokenLiteral(),
 		)
-		return false
+		return nil
 	}
 
-	return true
+	return returnStatement
 }
 
 func (*parserHelpers) expressionStatementIsOk(
@@ -127,11 +131,11 @@ let foo = 10;
 	helpers := &parserHelpers{}
 
 	for index, expectation := range expectations {
-		if !helpers.letStatementIsOk(
+		if helpers.letStatementIsOk(
 			t,
 			compound.Statements[index],
 			expectation.identifier,
-		) {
+		) == nil {
 			return
 		}
 	}
@@ -154,10 +158,10 @@ return 10;
 	helpers := &parserHelpers{}
 
 	for _, statement := range compound.Statements {
-		if !helpers.returnStatementIsOk(
+		if helpers.returnStatementIsOk(
 			t,
 			statement,
-		) {
+		) == nil {
 			return
 		}
 	}
