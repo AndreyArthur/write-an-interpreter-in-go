@@ -59,6 +59,49 @@ func (*parserHelpers) returnStatementIsOk(
 	return true
 }
 
+func (*parserHelpers) expressionStatementIsOk(
+	t *testing.T,
+	statement monkey.AstStatement,
+) *monkey.AstExpressionStatement {
+	expressionStatement, ok := statement.(*monkey.AstExpressionStatement)
+	if !ok {
+		t.Fatal("Given statement is not an expression statement.")
+		return nil
+	}
+
+	return expressionStatement
+}
+
+func (*parserHelpers) integerLiteralIsOk(
+	t *testing.T,
+	expression monkey.AstExpression,
+	value int64,
+) *monkey.AstIntegerLiteral {
+	integerLiteral, ok := expression.(*monkey.AstIntegerLiteral)
+	if !ok {
+		t.Fatal("Given expression is not an integer literal.")
+		return nil
+	}
+
+	if integerLiteral.Token.Type != monkey.TOKEN_INTEGER {
+		t.Fatalf("Expected integer token type to be %s, got %s.",
+			monkey.GetTokenTypeString(monkey.TOKEN_INTEGER),
+			monkey.GetTokenTypeString(integerLiteral.Token.Type),
+		)
+		return nil
+	}
+
+	if integerLiteral.Value != value {
+		t.Fatalf("Expected integer literal value to be %d, got %d.",
+			value,
+			integerLiteral.Value,
+		)
+		return nil
+	}
+
+	return integerLiteral
+}
+
 func TestLetStatements(t *testing.T) {
 	input := `let a = 5;
 let b = true;
@@ -115,6 +158,50 @@ return 10;
 			t,
 			statement,
 		) {
+			return
+		}
+	}
+}
+
+func TestIntegerLiterals(t *testing.T) {
+	input := `5;
+20;
+10;
+`
+	lexer := monkey.NewLexer(input)
+	parser := monkey.NewParser(lexer)
+
+	compound := parser.Parse()
+
+	if len(compound.Statements) < 3 {
+		t.Fatalf("Expected 3 statements, got %d.", len(compound.Statements))
+	}
+
+	expectations := []struct {
+		value int64
+	}{
+		{5},
+		{20},
+		{10},
+	}
+
+	helpers := &parserHelpers{}
+
+	for index, expectation := range expectations {
+		expressionStatement := helpers.expressionStatementIsOk(
+			t,
+			compound.Statements[index],
+		)
+		if expressionStatement == nil {
+			return
+		}
+
+		integerLiteral := helpers.integerLiteralIsOk(
+			t,
+			expressionStatement.Expression,
+			expectation.value,
+		)
+		if integerLiteral == nil {
 			return
 		}
 	}

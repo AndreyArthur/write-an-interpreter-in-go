@@ -1,5 +1,9 @@
 package monkey
 
+import (
+	"strconv"
+)
+
 type Parser struct {
 	tokens   []*Token
 	position int
@@ -61,6 +65,7 @@ func (parser *Parser) parseReturnStatement() AstStatement {
 	returnStatement := &AstReturnStatement{Token: parser.current}
 	parser.advance()
 
+	// TODO: parse the return value
 	for parser.current.Type != TOKEN_SEMICOLON &&
 		parser.current.Type != TOKEN_EOF {
 		parser.advance()
@@ -73,6 +78,44 @@ func (parser *Parser) parseReturnStatement() AstStatement {
 	return returnStatement
 }
 
+func (parser *Parser) parseIntegerLiteral() AstExpression {
+	value, err := strconv.ParseInt(parser.current.Literal, 10, 64)
+	if err != nil {
+		return nil
+	}
+
+	integerLiteral := &AstIntegerLiteral{
+		Token: parser.current,
+		Value: value,
+	}
+
+	parser.advance()
+
+	return integerLiteral
+}
+
+func (parser *Parser) parseExpression() AstExpression {
+	switch parser.current.Type {
+	case TOKEN_INTEGER:
+		return parser.parseIntegerLiteral()
+	default:
+		// TODO: cover all the cases and handle errors
+		return nil
+	}
+}
+
+func (parser *Parser) parseExpressionStatement() AstStatement {
+	expressionStatement := &AstExpressionStatement{Token: parser.current}
+
+	expressionStatement.Expression = parser.parseExpression()
+
+	if parser.current.Type == TOKEN_SEMICOLON {
+		parser.advance()
+	}
+
+	return expressionStatement
+}
+
 func (parser *Parser) parseStatement() AstStatement {
 	switch parser.current.Type {
 	case TOKEN_LET:
@@ -80,8 +123,7 @@ func (parser *Parser) parseStatement() AstStatement {
 	case TOKEN_RETURN:
 		return parser.parseReturnStatement()
 	default:
-		// TODO: implement other cases and handle errors
-		return nil
+		return parser.parseExpressionStatement()
 	}
 }
 

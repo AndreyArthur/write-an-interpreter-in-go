@@ -88,3 +88,29 @@ func (returnStatement *AstReturnStatement) String() string {
 
 	return out.String()
 }
+
+type AstExpressionStatement struct {
+	Token      *Token // first token
+	Expression AstExpression
+}
+
+func (expression *AstExpressionStatement) statement() {}
+func (expression *AstExpressionStatement) TokenLiteral() string {
+	return expression.Expression.TokenLiteral()
+}
+func (expression *AstExpressionStatement) String() string {
+	return expression.Expression.String() + ";"
+}
+
+type AstIntegerLiteral struct {
+	Token *Token // the integer string
+	Value int64
+}
+
+func (integer *AstIntegerLiteral) expression() {}
+func (integer *AstIntegerLiteral) TokenLiteral() string {
+	return integer.Token.Literal
+}
+func (integer *AstIntegerLiteral) String() string {
+	return integer.TokenLiteral()
+}
