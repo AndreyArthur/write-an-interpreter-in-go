@@ -114,3 +114,16 @@ func (integer *AstIntegerLiteral) TokenLiteral() string {
 func (integer *AstIntegerLiteral) String() string {
 	return integer.TokenLiteral()
 }
+
+type AstBooleanLiteral struct {
+	Token *Token // "true" or "false"
+	Value bool
+}
+
+func (boolean *AstBooleanLiteral) expression() {}
+func (boolean *AstBooleanLiteral) TokenLiteral() string {
+	return boolean.Token.Literal
+}
+func (boolean *AstBooleanLiteral) String() string {
+	return boolean.TokenLiteral()
+}

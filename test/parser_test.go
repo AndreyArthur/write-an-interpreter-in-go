@@ -106,6 +106,38 @@ func (*parserHelpers) expectIntegerLiteral(
 	return integerLiteral
 }
 
+func (*parserHelpers) expectBooleanLiteral(
+	t *testing.T,
+	expression monkey.AstExpression,
+	value bool,
+) *monkey.AstBooleanLiteral {
+	booleanLiteral, ok := expression.(*monkey.AstBooleanLiteral)
+	if !ok {
+		t.Fatal("Given expression is not an boolean literal.")
+		return nil
+	}
+
+	if booleanLiteral.Token.Type != monkey.TOKEN_TRUE &&
+		booleanLiteral.Token.Type != monkey.TOKEN_FALSE {
+		t.Fatalf("Expected integer token type to be %s or %s, got %s.",
+			monkey.GetTokenTypeString(monkey.TOKEN_TRUE),
+			monkey.GetTokenTypeString(monkey.TOKEN_FALSE),
+			monkey.GetTokenTypeString(booleanLiteral.Token.Type),
+		)
+		return nil
+	}
+
+	if booleanLiteral.Value != value {
+		t.Fatalf("Expected boolean literal value to be %t, got %t.",
+			value,
+			booleanLiteral.Value,
+		)
+		return nil
+	}
+
+	return booleanLiteral
+}
+
 func TestLetStatements(t *testing.T) {
 	input := `let a = 5;
 let b = true;
@@ -206,6 +238,48 @@ func TestIntegerLiterals(t *testing.T) {
 			expectation.value,
 		)
 		if integerLiteral == nil {
+			return
+		}
+	}
+}
+
+func TestBooleanLiterals(t *testing.T) {
+	input := `true;
+false;
+`
+	lexer := monkey.NewLexer(input)
+	parser := monkey.NewParser(lexer)
+
+	compound := parser.Parse()
+
+	if len(compound.Statements) < 2 {
+		t.Fatalf("Expected 2 statements, got %d.", len(compound.Statements))
+	}
+
+	expectations := []struct {
+		value bool
+	}{
+		{true},
+		{false},
+	}
+
+	helpers := &parserHelpers{}
+
+	for index, expectation := range expectations {
+		expressionStatement := helpers.expectExpressionStatement(
+			t,
+			compound.Statements[index],
+		)
+		if expressionStatement == nil {
+			return
+		}
+
+		booleanLiteral := helpers.expectBooleanLiteral(
+			t,
+			expressionStatement.Expression,
+			expectation.value,
+		)
+		if booleanLiteral == nil {
 			return
 		}
 	}

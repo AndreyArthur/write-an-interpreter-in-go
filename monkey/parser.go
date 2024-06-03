@@ -38,7 +38,7 @@ func (parser *Parser) advance() {
 	parser.current = parser.tokens[parser.position]
 }
 
-func (parser *Parser) parseLetStatement() *AstLetStatement {
+func (parser *Parser) parseLetStatement() AstStatement {
 	letStatement := &AstLetStatement{Token: parser.current}
 	parser.advance()
 
@@ -94,10 +94,23 @@ func (parser *Parser) parseIntegerLiteral() AstExpression {
 	return integerLiteral
 }
 
+func (parser *Parser) parseBooleanLiteral() AstExpression {
+	booleanLiteral := &AstBooleanLiteral{
+		Token: parser.current,
+		Value: parser.current.Type == TOKEN_TRUE,
+	}
+
+	parser.advance()
+
+	return booleanLiteral
+}
+
 func (parser *Parser) parseExpression() AstExpression {
 	switch parser.current.Type {
 	case TOKEN_INTEGER:
 		return parser.parseIntegerLiteral()
+	case TOKEN_TRUE, TOKEN_FALSE:
+		return parser.parseBooleanLiteral()
 	default:
 		// TODO: cover all the cases and handle errors
 		return nil
