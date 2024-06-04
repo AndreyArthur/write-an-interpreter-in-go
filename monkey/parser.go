@@ -118,6 +118,7 @@ func (parser *Parser) parsePrefixExpression() AstExpression {
 		parser.advance()
 		prefixExpression.Right = parser.parseExpression()
 	default:
+		// TODO: handle errors
 		return nil
 	}
 
@@ -126,14 +127,21 @@ func (parser *Parser) parsePrefixExpression() AstExpression {
 }
 
 func (parser *Parser) parseExpression() AstExpression {
+	var left AstExpression
+
 	switch parser.current.Type {
 	case TOKEN_INTEGER:
-		return parser.parseIntegerLiteral()
+		left = parser.parseIntegerLiteral()
 	case TOKEN_TRUE, TOKEN_FALSE:
-		return parser.parseBooleanLiteral()
+		left = parser.parseBooleanLiteral()
+	case TOKEN_MINUS, TOKEN_BANG:
+		left = parser.parsePrefixExpression()
 	default:
-		return parser.parsePrefixExpression()
+		// TODO: handle errors
+		return nil
 	}
+
+	return left
 }
 
 func (parser *Parser) parseExpressionStatement() AstStatement {
