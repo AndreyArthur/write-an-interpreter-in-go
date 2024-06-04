@@ -127,3 +127,24 @@ func (boolean *AstBooleanLiteral) TokenLiteral() string {
 func (boolean *AstBooleanLiteral) String() string {
 	return boolean.TokenLiteral()
 }
+
+type AstPrefixExpression struct {
+	Token    *Token // Operator token
+	Operator string
+	Right    AstExpression
+}
+
+func (prefix *AstPrefixExpression) expression() {}
+func (prefix *AstPrefixExpression) TokenLiteral() string {
+	return prefix.Token.Literal
+}
+func (prefix *AstPrefixExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(prefix.Operator)
+	out.WriteString(prefix.Right.String())
+	out.WriteString(")")
+
+	return out.String()
+}

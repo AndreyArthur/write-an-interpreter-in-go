@@ -105,6 +105,26 @@ func (parser *Parser) parseBooleanLiteral() AstExpression {
 	return booleanLiteral
 }
 
+func (parser *Parser) parsePrefixExpression() AstExpression {
+	prefixExpression := &AstPrefixExpression{Token: parser.current}
+
+	switch parser.current.Type {
+	case TOKEN_MINUS:
+		prefixExpression.Operator = parser.current.Literal
+		parser.advance()
+		prefixExpression.Right = parser.parseExpression()
+	case TOKEN_BANG:
+		prefixExpression.Operator = parser.current.Literal
+		parser.advance()
+		prefixExpression.Right = parser.parseExpression()
+	default:
+		return nil
+	}
+
+	return prefixExpression
+
+}
+
 func (parser *Parser) parseExpression() AstExpression {
 	switch parser.current.Type {
 	case TOKEN_INTEGER:
@@ -112,8 +132,7 @@ func (parser *Parser) parseExpression() AstExpression {
 	case TOKEN_TRUE, TOKEN_FALSE:
 		return parser.parseBooleanLiteral()
 	default:
-		// TODO: cover all the cases and handle errors
-		return nil
+		return parser.parsePrefixExpression()
 	}
 }
 

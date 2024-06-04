@@ -284,3 +284,33 @@ false;
 		}
 	}
 }
+
+func TestExpressions(t *testing.T) {
+	expectations := []struct {
+		input  string
+		output string
+	}{
+		{"-5", "(-5);"},
+		{"!false", "(!false);"},
+	}
+
+	for _, expectation := range expectations {
+		lexer := monkey.NewLexer(expectation.input)
+		parser := monkey.NewParser(lexer)
+		compound := parser.Parse()
+
+		if len(compound.Statements) != 1 {
+			t.Fatalf("Expected 1 statement, got %d.", len(compound.Statements))
+		}
+
+		statement := compound.Statements[0]
+
+		if statement.String() != expectation.output {
+			t.Fatalf(
+				"Expected %q, got %q.",
+				expectation.output,
+				statement.String(),
+			)
+		}
+	}
+}
