@@ -148,3 +148,26 @@ func (prefix *AstPrefixExpression) String() string {
 
 	return out.String()
 }
+
+type AstInfixExpression struct {
+	Token    *Token // Operator token
+	Left     AstExpression
+	Operator string
+	Right    AstExpression
+}
+
+func (infix *AstInfixExpression) expression() {}
+func (infix *AstInfixExpression) TokenLiteral() string {
+	return infix.Token.Literal
+}
+func (infix *AstInfixExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(infix.Left.String())
+	out.WriteString(" " + infix.Operator + " ")
+	out.WriteString(infix.Right.String())
+	out.WriteString(")")
+
+	return out.String()
+}

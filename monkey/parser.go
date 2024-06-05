@@ -4,6 +4,26 @@ import (
 	"strconv"
 )
 
+const (
+	PRECEDENCE_LOWEST = iota
+	PRECEDENCE_EQUALS
+	PRECEDENCE_LESS_GREATER
+	PRECEDENCE_SUM
+	PRECEDENCE_PRODUCT
+	PRECEDENCE_PREFIX
+)
+
+var precedences = map[TokenType]int{
+	TOKEN_EQUALS:       PRECEDENCE_EQUALS,
+	TOKEN_NOT_EQUALS:   PRECEDENCE_EQUALS,
+	TOKEN_LESS_THAN:    PRECEDENCE_LESS_GREATER,
+	TOKEN_GREATER_THAN: PRECEDENCE_LESS_GREATER,
+	TOKEN_PLUS:         PRECEDENCE_SUM,
+	TOKEN_MINUS:        PRECEDENCE_SUM,
+	TOKEN_ASTERISK:     PRECEDENCE_PRODUCT,
+	TOKEN_SLASH:        PRECEDENCE_PRODUCT,
+}
+
 type Parser struct {
 	tokens   []*Token
 	position int
@@ -112,11 +132,11 @@ func (parser *Parser) parsePrefixExpression() AstExpression {
 	case TOKEN_MINUS:
 		prefixExpression.Operator = parser.current.Literal
 		parser.advance()
-		prefixExpression.Right = parser.parseExpression()
+		prefixExpression.Right = parser.parseExpression(PRECEDENCE_PREFIX)
 	case TOKEN_BANG:
 		prefixExpression.Operator = parser.current.Literal
 		parser.advance()
-		prefixExpression.Right = parser.parseExpression()
+		prefixExpression.Right = parser.parseExpression(PRECEDENCE_PREFIX)
 	default:
 		// TODO: handle errors
 		return nil
@@ -126,7 +146,21 @@ func (parser *Parser) parsePrefixExpression() AstExpression {
 
 }
 
-func (parser *Parser) parseExpression() AstExpression {
+func (parser *Parser) parseInfixExpression(left AstExpression) AstExpression {
+	infixExpression := &AstInfixExpression{
+		Token:    parser.current,
+		Left:     left,
+		Operator: parser.current.Literal,
+	}
+
+	precedence := precedences[parser.current.Type]
+	parser.advance()
+	infixExpression.Right = parser.parseExpression(precedence)
+
+	return infixExpression
+}
+
+func (parser *Parser) parseExpression(precedence int) AstExpression {
 	var left AstExpression
 
 	switch parser.current.Type {
@@ -141,13 +175,19 @@ func (parser *Parser) parseExpression() AstExpression {
 		return nil
 	}
 
+	for parser.current.Type != TOKEN_SEMICOLON &&
+		parser.current.Type != TOKEN_EOF &&
+		precedence < precedences[parser.current.Type] {
+		left = parser.parseInfixExpression(left)
+	}
+
 	return left
 }
 
 func (parser *Parser) parseExpressionStatement() AstStatement {
 	expressionStatement := &AstExpressionStatement{Token: parser.current}
 
-	expressionStatement.Expression = parser.parseExpression()
+	expressionStatement.Expression = parser.parseExpression(PRECEDENCE_LOWEST)
 
 	if parser.current.Type == TOKEN_SEMICOLON {
 		parser.advance()
