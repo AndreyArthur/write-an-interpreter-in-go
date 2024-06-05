@@ -68,11 +68,15 @@ func (parser *Parser) parseLetStatement() AstStatement {
 	}
 	letStatement.Identifier = identifier
 
-	// TODO: parse the expression after assignment
-	for parser.current.Type != TOKEN_SEMICOLON &&
-		parser.current.Type != TOKEN_EOF {
-		parser.advance()
+	parser.advance()
+	if parser.current.Type != TOKEN_ASSIGNMENT {
+		// TODO: handle errors
+		return nil
 	}
+
+	parser.advance()
+	letValue := parser.parseExpression(PRECEDENCE_LOWEST)
+	letStatement.Value = letValue
 
 	if parser.current.Type == TOKEN_SEMICOLON {
 		parser.advance()
@@ -83,13 +87,10 @@ func (parser *Parser) parseLetStatement() AstStatement {
 
 func (parser *Parser) parseReturnStatement() AstStatement {
 	returnStatement := &AstReturnStatement{Token: parser.current}
-	parser.advance()
 
-	// TODO: parse the return value
-	for parser.current.Type != TOKEN_SEMICOLON &&
-		parser.current.Type != TOKEN_EOF {
-		parser.advance()
-	}
+	parser.advance()
+	returnValueExpression := parser.parseExpression(PRECEDENCE_LOWEST)
+	returnStatement.Value = returnValueExpression
 
 	if parser.current.Type == TOKEN_SEMICOLON {
 		parser.advance()

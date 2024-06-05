@@ -199,6 +199,70 @@ return 10;
 	}
 }
 
+func TestReturnValues(t *testing.T) {
+	expectations := []struct {
+		input  string
+		output string
+	}{
+		{"return 5", "return 5;"},
+		{"return -10", "return (-10);"},
+		{"return 2 + 8 * 5", "return (2 + (8 * 5));"},
+		{"return !false;", "return (!false);"},
+	}
+
+	for _, expectation := range expectations {
+		lexer := monkey.NewLexer(expectation.input)
+		parser := monkey.NewParser(lexer)
+		compound := parser.Parse()
+
+		if len(compound.Statements) != 1 {
+			t.Fatalf("Expected 1 statement, got %d.", len(compound.Statements))
+		}
+
+		statement := compound.Statements[0]
+
+		if statement.String() != expectation.output {
+			t.Fatalf(
+				"Expected %q, got %q.",
+				expectation.output,
+				statement.String(),
+			)
+		}
+	}
+}
+
+func TestLetValues(t *testing.T) {
+	expectations := []struct {
+		input  string
+		output string
+	}{
+		{"let a = 5", "let a = 5;"},
+		{"let b = -10", "let b = (-10);"},
+		{"let c = 2 + 8 * 5", "let c = (2 + (8 * 5));"},
+		{"let d = !false;", "let d = (!false);"},
+	}
+
+	for _, expectation := range expectations {
+		lexer := monkey.NewLexer(expectation.input)
+		parser := monkey.NewParser(lexer)
+		compound := parser.Parse()
+
+		if len(compound.Statements) != 1 {
+			t.Fatalf("Expected 1 statement, got %d.", len(compound.Statements))
+		}
+
+		statement := compound.Statements[0]
+
+		if statement.String() != expectation.output {
+			t.Fatalf(
+				"Expected %q, got %q.",
+				expectation.output,
+				statement.String(),
+			)
+		}
+	}
+}
+
 func TestIntegerLiterals(t *testing.T) {
 	input := `5;
 20;
