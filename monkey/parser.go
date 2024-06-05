@@ -160,6 +160,13 @@ func (parser *Parser) parseInfixExpression(left AstExpression) AstExpression {
 	return infixExpression
 }
 
+func (parser *Parser) parseEnforcedPrecedenceExpression() AstExpression {
+	parser.advance()
+	expression := parser.parseExpression(PRECEDENCE_LOWEST)
+	parser.advance()
+	return expression
+}
+
 func (parser *Parser) parseExpression(precedence int) AstExpression {
 	var left AstExpression
 
@@ -170,6 +177,8 @@ func (parser *Parser) parseExpression(precedence int) AstExpression {
 		left = parser.parseBooleanLiteral()
 	case TOKEN_MINUS, TOKEN_BANG:
 		left = parser.parsePrefixExpression()
+	case TOKEN_OPEN_PAREN:
+		left = parser.parseEnforcedPrecedenceExpression()
 	default:
 		// TODO: handle errors
 		return nil
