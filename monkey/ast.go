@@ -171,3 +171,29 @@ func (infix *AstInfixExpression) String() string {
 
 	return out.String()
 }
+
+type AstFunctionCall struct {
+	Token      *Token // the identifier token
+	Identifier *AstIdentifier
+	Arguments  []AstExpression
+}
+
+func (functionCall *AstFunctionCall) expression() {}
+func (functionCall *AstFunctionCall) TokenLiteral() string {
+	return functionCall.Token.Literal
+}
+func (functionCall *AstFunctionCall) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(functionCall.TokenLiteral())
+	out.WriteString("(")
+	for index, argument := range functionCall.Arguments {
+		out.WriteString(argument.String())
+		if index < len(functionCall.Arguments)-1 {
+			out.WriteString(", ")
+		}
+	}
+	out.WriteString(")")
+
+	return out.String()
+}

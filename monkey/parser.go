@@ -58,17 +58,21 @@ func (parser *Parser) advance() {
 	parser.current = parser.tokens[parser.position]
 }
 
+func (parser *Parser) peek() *Token {
+	if parser.current.Type == TOKEN_EOF {
+		return parser.current
+	}
+
+	return parser.tokens[parser.position+1]
+}
+
 func (parser *Parser) parseLetStatement() AstStatement {
 	letStatement := &AstLetStatement{Token: parser.current}
 	parser.advance()
 
-	identifier := &AstIdentifier{
-		Token: parser.current,
-		Value: parser.current.Literal,
-	}
+	identifier := parser.parseIdentifier()
 	letStatement.Identifier = identifier
 
-	parser.advance()
 	if parser.current.Type != TOKEN_ASSIGNMENT {
 		// TODO: handle errors
 		return nil
@@ -168,6 +172,42 @@ func (parser *Parser) parseEnforcedPrecedenceExpression() AstExpression {
 	return expression
 }
 
+func (parser *Parser) parseIdentifier() *AstIdentifier {
+	identifier := &AstIdentifier{
+		Token: parser.current,
+		Value: parser.current.Literal,
+	}
+	parser.advance()
+	return identifier
+}
+
+func (parser *Parser) parseFunctionCall() AstExpression {
+	functionCall := &AstFunctionCall{Token: parser.current}
+
+	identifier := parser.parseIdentifier()
+	functionCall.Identifier = identifier
+
+	// TODO: expect an open paren
+	parser.advance()
+
+	arguments := []AstExpression{}
+	for parser.current.Type != TOKEN_CLOSE_PAREN {
+		expression := parser.parseExpression(PRECEDENCE_LOWEST)
+		arguments = append(arguments, expression)
+		// TODO: expect a comma
+		if parser.current.Type == TOKEN_COMMA {
+			parser.advance()
+		}
+	}
+
+	// TODO: expect a close paren
+	parser.advance()
+
+	functionCall.Arguments = arguments
+
+	return functionCall
+}
+
 func (parser *Parser) parseExpression(precedence int) AstExpression {
 	var left AstExpression
 
@@ -180,6 +220,12 @@ func (parser *Parser) parseExpression(precedence int) AstExpression {
 		left = parser.parsePrefixExpression()
 	case TOKEN_OPEN_PAREN:
 		left = parser.parseEnforcedPrecedenceExpression()
+	case TOKEN_IDENTIFIER:
+		if parser.peek().Type == TOKEN_OPEN_PAREN {
+			left = parser.parseFunctionCall()
+		} else {
+			left = parser.parseIdentifier()
+		}
 	default:
 		// TODO: handle errors
 		return nil

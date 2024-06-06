@@ -388,3 +388,34 @@ func TestExpressions(t *testing.T) {
 		}
 	}
 }
+
+func TestFunctionCalls(t *testing.T) {
+	expectations := []struct {
+		input  string
+		output string
+	}{
+		{"add (a , b)", "add(a, b);"},
+		{"add(5, 8)", "add(5, 8);"},
+		{"add(2 + 3 / 4, false)", "add((2 + (3 / 4)), false);"},
+	}
+
+	for _, expectation := range expectations {
+		lexer := monkey.NewLexer(expectation.input)
+		parser := monkey.NewParser(lexer)
+		compound := parser.Parse()
+
+		if len(compound.Statements) != 1 {
+			t.Fatalf("Expected 1 statement, got %d.", len(compound.Statements))
+		}
+
+		statement := compound.Statements[0]
+
+		if statement.String() != expectation.output {
+			t.Fatalf(
+				"Expected %q, got %q.",
+				expectation.output,
+				statement.String(),
+			)
+		}
+	}
+}
