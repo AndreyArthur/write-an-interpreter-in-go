@@ -208,6 +208,42 @@ func (parser *Parser) parseFunctionCall() AstExpression {
 	return functionCall
 }
 
+func (parser *Parser) parseFunctionDefinition() AstExpression {
+	functionDefinition := &AstFunctionDefinition{Token: parser.current}
+
+	// TODO: expect a function token
+	parser.advance()
+	// TODO: expect an open paren
+	parser.advance()
+
+	params := []*AstIdentifier{}
+	for parser.current.Type != TOKEN_CLOSE_PAREN {
+		identifier := parser.parseIdentifier()
+		params = append(params, identifier)
+		// TODO: expect a comma
+		if parser.current.Type == TOKEN_COMMA {
+			parser.advance()
+		}
+	}
+
+	// TODO: expect a close paren
+	parser.advance()
+
+	functionDefinition.Params = params
+
+	// TODO: expect an open brace
+	parser.advance()
+
+	body := parser.parseCompound()
+
+	// TODO: expect a close brace
+	parser.advance()
+
+	functionDefinition.Body = body
+
+	return functionDefinition
+}
+
 func (parser *Parser) parseExpression(precedence int) AstExpression {
 	var left AstExpression
 
@@ -226,6 +262,8 @@ func (parser *Parser) parseExpression(precedence int) AstExpression {
 		} else {
 			left = parser.parseIdentifier()
 		}
+	case TOKEN_FUNCTION:
+		left = parser.parseFunctionDefinition()
 	default:
 		// TODO: handle errors
 		return nil
@@ -263,13 +301,18 @@ func (parser *Parser) parseStatement() AstStatement {
 	}
 }
 
-func (parser *Parser) Parse() *AstCompound {
+func (parser *Parser) parseCompound() *AstCompound {
 	compound := &AstCompound{Statements: []AstStatement{}}
 
-	for parser.current.Type != TOKEN_EOF {
+	for parser.current.Type != TOKEN_EOF &&
+		parser.current.Type != TOKEN_CLOSE_BRACE {
 		statement := parser.parseStatement()
 		compound.Statements = append(compound.Statements, statement)
 	}
 
 	return compound
+}
+
+func (parser *Parser) Parse() *AstCompound {
+	return parser.parseCompound()
 }

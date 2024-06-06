@@ -197,3 +197,30 @@ func (functionCall *AstFunctionCall) String() string {
 
 	return out.String()
 }
+
+type AstFunctionDefinition struct {
+	Token  *Token // "fn"
+	Params []*AstIdentifier
+	Body   *AstCompound
+}
+
+func (functionDefinition *AstFunctionDefinition) expression() {}
+func (functionDefinition *AstFunctionDefinition) TokenLiteral() string {
+	return functionDefinition.Token.Literal
+}
+func (functionDefinition *AstFunctionDefinition) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(functionDefinition.TokenLiteral() + " (")
+	for index, param := range functionDefinition.Params {
+		out.WriteString(param.Value)
+		if index < len(functionDefinition.Params)-1 {
+			out.WriteString(", ")
+		}
+	}
+	out.WriteString(") { ")
+	out.WriteString(functionDefinition.Body.String())
+	out.WriteString(" }")
+
+	return out.String()
+}

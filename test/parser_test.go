@@ -419,3 +419,33 @@ func TestFunctionCalls(t *testing.T) {
 		}
 	}
 }
+func TestFunctionDefinitions(t *testing.T) {
+	expectations := []struct {
+		input  string
+		output string
+	}{
+		{"fn (a, b) { return a + b; }", "fn (a, b) { return (a + b); };"},
+		{"fn () { return true; }", "fn () { return true; };"},
+		{"fn (a, b, c, d) {}", "fn (a, b, c, d) {  };"},
+	}
+
+	for _, expectation := range expectations {
+		lexer := monkey.NewLexer(expectation.input)
+		parser := monkey.NewParser(lexer)
+		compound := parser.Parse()
+
+		if len(compound.Statements) != 1 {
+			t.Fatalf("Expected 1 statement, got %d.", len(compound.Statements))
+		}
+
+		statement := compound.Statements[0]
+
+		if statement.String() != expectation.output {
+			t.Fatalf(
+				"Expected %q, got %q.",
+				expectation.output,
+				statement.String(),
+			)
+		}
+	}
+}
